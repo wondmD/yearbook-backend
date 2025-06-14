@@ -19,7 +19,7 @@ urlpatterns = [
     
     # API base URL
     path('api/', include([
-        # Include other app URLs here
+        path('events/', include('events.urls')),  # Events app endpoints
     ])),
 ]
 

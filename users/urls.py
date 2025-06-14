@@ -1,7 +1,13 @@
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from rest_framework.permissions import IsAuthenticated
 from . import views
 from .jwt_serializers import CustomTokenObtainPairView
+
+# Create a router for ViewSets
+router = DefaultRouter()
+router.register(r'profiles', views.ProfileViewSet, basename='profile')
 
 # Admin endpoints
 admin_patterns = [
@@ -16,7 +22,11 @@ admin_patterns = [
     path('users/<int:user_id>/approve/', views.ApproveUserView.as_view(), name='approve_user'),
 ]
 
+# Include router URLs first to avoid conflicts
 urlpatterns = [
+    # Include router URLs
+    path('', include(router.urls)),
+    
     # Debug endpoint
     path('debug/unapproved/', views.debug_unapproved_users, name='debug_unapproved_users'),
     
@@ -28,9 +38,15 @@ urlpatterns = [
     path('token/blacklist/', views.BlacklistTokenView.as_view(), name='token_blacklist'),
     
     # User profile endpoints
-    path('profile/', views.UserProfileView.as_view(), name='user_profile'),
-    path('me/', views.UserDetailView.as_view(), name='user_detail'),
-    path('check-auth/', views.CheckAuthView.as_view(), name='check_auth'),
+    path('users/profile/', views.UserProfileView.as_view(), name='user_profile'),
+    path('users/profile/image/', views.ProfileImageView.as_view(), name='profile_image_upload'),
+    path('users/me/', views.UserDetailView.as_view(), name='user_detail'),
+    path('users/check-auth/', views.CheckAuthView.as_view(), name='check_auth'),
+    
+    # Profile approval endpoints
+    path('admin/profiles/pending/', views.PendingProfilesView.as_view(), name='pending_profiles'),
+    path('admin/profiles/<int:profile_id>/approve/', views.ApproveProfileView.as_view(), name='approve_profile'),
+    path('admin/profiles/<int:profile_id>/reject/', views.RejectProfileView.as_view(), name='reject_profile'),
     
     # Admin endpoints
     path('admin/', include((admin_patterns, 'admin'))),
@@ -38,6 +54,9 @@ urlpatterns = [
     # Backward compatibility
     path('users/', views.UserListView.as_view(), name='user_list'),
     path('users/<int:user_id>/approve/', views.ApproveUserView.as_view(), name='approve_user_deprecated'),
+    
+    # Keep this at the end to avoid conflicts
+    path('profiles/', views.ProfileListView.as_view(), name='profile_list'),
 ]
 
 # Add URL patterns for the API documentation

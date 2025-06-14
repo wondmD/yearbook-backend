@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from .utils import user_profile_image_path, validate_image_file_extension
 
 
 class User(AbstractUser):
@@ -40,12 +41,34 @@ class User(AbstractUser):
 
 
 class UserProfile(models.Model):
-    """Extended user profile information."""
+    """Extended user profile information.
+    
+    Each user can have exactly one profile.
+    """
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='profile'
+        related_name='profile',
+        unique=True,
+        error_messages={
+            'unique': 'A profile already exists for this user.'
+        }
     )
+    is_approved = models.BooleanField(
+        _('approved'),
+        default=False,
+        help_text=_('Designates whether this profile is approved to be shown on the site.'),
+    )
+    
+    def clean(self):
+        """Ensure one profile per user."""
+        if self.user_id and UserProfile.objects.filter(user=self.user).exclude(pk=self.pk).exists():
+            raise ValidationError('A profile already exists for this user.')
+    
+    def save(self, *args, **kwargs):
+        """Override save to call clean method."""
+        self.clean()
+        super().save(*args, **kwargs)
     nickname = models.CharField(
         _('nickname'),
         max_length=100,
@@ -70,10 +93,11 @@ class UserProfile(models.Model):
     )
     image = models.ImageField(
         _('profile image'),
-        upload_to='profile_images/',
+        upload_to=user_profile_image_path,
         blank=True,
         null=True,
         help_text=_('Profile picture'),
+        validators=[validate_image_file_extension],
     )
     fun_fact = models.TextField(
         _('fun fact'),

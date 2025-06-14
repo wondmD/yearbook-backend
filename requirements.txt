@@ -4,7 +4,7 @@ djangorestframework-simplejwt>=5.3.0
 django-cors-headers>=4.3.0
 Pillow>=10.0.0
 python-dotenv>=1.0.0
-
+drf-nested-routers
 # Development dependencies
 ipdb>=0.13.13
 django-extensions>=4.2.0

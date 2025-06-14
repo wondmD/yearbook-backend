@@ -38,9 +38,21 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'nickname', 'location')
+    list_display = ('user', 'nickname', 'location', 'is_approved', 'created_at')
     search_fields = ('user__username', 'nickname', 'location')
-    list_filter = ('created_at', 'updated_at')
+    list_filter = ('is_approved', 'created_at', 'updated_at')
+    list_editable = ('is_approved',)
+    actions = ['approve_profiles', 'unapprove_profiles']
+    
+    def approve_profiles(self, request, queryset):
+        updated = queryset.update(is_approved=True)
+        self.message_user(request, f"{updated} profiles were successfully approved.")
+    approve_profiles.short_description = "Approve selected profiles"
+    
+    def unapprove_profiles(self, request, queryset):
+        updated = queryset.update(is_approved=False)
+        self.message_user(request, f"{updated} profiles were successfully unapproved.")
+    unapprove_profiles.short_description = "Unapprove selected profiles"
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (
