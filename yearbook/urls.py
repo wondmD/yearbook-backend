@@ -20,6 +20,7 @@ urlpatterns = [
     # API base URL
     path('api/', include([
         path('events/', include('events.urls')),  # Events app endpoints
+        path('memories/', include('memories.urls')),  # Memories app endpoints
     ])),
 ]
 
