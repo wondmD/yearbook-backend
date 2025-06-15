@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.db import connection
 from django.db.models import Q
 from django.conf import settings
+from drf_spectacular.utils import extend_schema
 import os
 from .models import UserProfile
 from django.db import transaction
@@ -25,6 +26,7 @@ from .serializers import (
 
 User = get_user_model()
 
+@extend_schema(tags=['Authentication'])
 class RegisterView(generics.CreateAPIView):
     """View for user registration."""
     queryset = User.objects.all()
@@ -35,6 +37,7 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         return user
 
+@extend_schema(tags=['User Profiles'])
 class UserProfileView(generics.RetrieveUpdateAPIView):
     """View for retrieving and updating user profile."""
     permission_classes = [IsAuthenticated]
@@ -44,6 +47,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         # Get the profile of the currently authenticated user
         return self.request.user.profile
 
+@extend_schema(tags=['Users'])
 class UserDetailView(generics.RetrieveUpdateAPIView):
     """View for retrieving and updating user and profile details."""
     permission_classes = [IsAuthenticated]
@@ -122,6 +126,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
+@extend_schema(tags=['Admin - Users'])
 class UserListView(generics.ListAPIView):
     """View for listing all users (admin only)."""
     permission_classes = []  # Temporarily disabled for debugging
@@ -185,6 +190,7 @@ class UserListView(generics.ListAPIView):
         return Response(response_data)
 
 
+@extend_schema(tags=['Admin - Users'])
 class UserManagementView(APIView):
     """View for managing user approval status (admin only)."""
     permission_classes = [IsAdminUser]
@@ -289,6 +295,7 @@ class ApproveUserView(APIView):
             status=status.HTTP_200_OK
         )
 
+@extend_schema(tags=['Authentication'])
 class BlacklistTokenView(APIView):
     """View for logging out a user by blacklisting their refresh token."""
     permission_classes = [IsAuthenticated]
@@ -302,6 +309,7 @@ class BlacklistTokenView(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(tags=['Authentication'])
 class CheckAuthView(APIView):
     """View to check if user is authenticated and get their data."""
     permission_classes = [IsAuthenticated]
@@ -311,6 +319,7 @@ class CheckAuthView(APIView):
         return Response(serializer.data)
 
 
+@extend_schema(tags=['User Profiles'])
 class ProfileListView(generics.ListAPIView):
     """View for listing user profiles."""
     permission_classes = [IsAuthenticated]
@@ -339,6 +348,7 @@ class IsOwnerOrStaffOrReadOnly(permissions.BasePermission):
         return obj.user == request.user or request.user.is_staff
 
 
+@extend_schema(tags=['User Profiles'])
 class ProfileViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing user profiles.
@@ -454,6 +464,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         raise PermissionDenied("You don't have permission to view this profile.")
 
 
+@extend_schema(tags=['Admin - User Profiles'])
 class PendingProfilesView(APIView):
     """View for listing and managing pending profiles (admin only)."""
     permission_classes = [IsAdminUser]
@@ -471,6 +482,7 @@ class PendingProfilesView(APIView):
             )
 
 
+@extend_schema(tags=['Admin - User Profiles'])
 class ApproveProfileView(APIView):
     """View for approving a profile (admin only)."""
     permission_classes = [IsAdminUser]

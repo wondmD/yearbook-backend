@@ -5,12 +5,14 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 import os
 
 from .models import Event, EventPhoto
 from .serializers import EventSerializer, EventCreateSerializer, EventPhotoSerializer
 from users.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly, IsApprovedUser
 
+@extend_schema(tags=['Events'])
 class EventViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.
@@ -68,6 +70,11 @@ class EventViewSet(viewsets.ModelViewSet):
         # Set the created_by user to the current user
         serializer.save(created_by=self.request.user)
     
+    @extend_schema(
+        tags=['Events'],
+        description='Approve an event (admin only)',
+        responses={200: None}
+    )
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """Approve an event (admin only)"""
@@ -76,6 +83,11 @@ class EventViewSet(viewsets.ModelViewSet):
         event.save()
         return Response({'status': 'event approved'})
     
+    @extend_schema(
+        tags=['Events'],
+        description='Unapprove an event (admin only)',
+        responses={200: None}
+    )
     @action(detail=True, methods=['post'])
     def unapprove(self, request, pk=None):
         """Unapprove an event (admin only)"""
@@ -85,6 +97,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response({'status': 'event unapproved'})
 
 
+@extend_schema(tags=['Event Photos'])
 class EventPhotoViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows event photos to be managed.
@@ -162,6 +175,11 @@ class EventPhotoViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise serializers.ValidationError(f"Error processing image: {str(e)}")
     
+    @extend_schema(
+        tags=['Event Photos'],
+        description='Approve a photo (admin only)',
+        responses={200: None}
+    )
     @action(detail=True, methods=['post'])
     def approve(self, request, event_id=None, pk=None):
         """Approve a photo (admin only)"""
@@ -170,6 +188,11 @@ class EventPhotoViewSet(viewsets.ModelViewSet):
         photo.save()
         return Response({'status': 'photo approved'})
     
+    @extend_schema(
+        tags=['Event Photos'],
+        description='Unapprove a photo (admin only)',
+        responses={200: None}
+    )
     @action(detail=True, methods=['post'])
     def unapprove(self, request, event_id=None, pk=None):
         """Unapprove a photo (admin only)"""

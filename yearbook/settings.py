@@ -44,11 +44,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
+    'django_filters',
     
     # Local apps
     'users.apps.UsersConfig',
     'classmates.apps.ClassmatesConfig',
     'events.apps.EventsConfig',  # Events app
+    'gcprojects.apps.GcprojectsConfig',  # GC Projects app
     # 'gcpr'
     
 
@@ -165,6 +169,12 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.FormParser',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
 }
 
 # JWT Settings
@@ -208,3 +218,10 @@ DEFAULT_FROM_EMAIL = 'noreply@example.com'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Yearbook API',
+    'DESCRIPTION': 'API documentation for the Yearbook project',
+    'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+}
